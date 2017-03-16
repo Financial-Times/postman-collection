@@ -1,0 +1,782 @@
+{
+	"variables": [],
+	"info": {
+		"name": "AWS_API",
+		"_postman_id": "7cb7194f-d785-97ba-dbcc-1c4896f65adc",
+		"description": "",
+		"schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Basic AWS ",
+			"description": "",
+			"item": [
+				{
+					"name": "Create aws basic policy",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"tests[\"Status code is 200\"] = (responseCode.code === 200);",
+									"",
+									"if (responseCode.code === 200){",
+									"    try {",
+									"        var data = JSON.parse(responseBody);",
+									"        var results = data.filter(function(obj) {",
+									"\t       return obj.resourceDetails['awsAccessKeyId']",
+									"        });",
+									"    var accessKey = results[0].resourceDetails.awsAccessKeyId",
+									"    }",
+									"    catch(e){",
+									"        console.log(e)",
+									"    }",
+									"    ",
+									"    postman.setGlobalVariable(\"accessKey\", accessKey);",
+									"}",
+									"",
+									"",
+									"tests[\"Body matches string\"] = responseBody.has(\"SUCCESS\");",
+									"",
+									"tests[\"aws policy has no permission\"] = !responseBody.has(\"Role\");",
+									"",
+									"tests[\"Artefact bucket created\"] = !responseBody.has(\"artefacts.todelete\")",
+									"",
+									"",
+									"",
+									"",
+									"",
+									"",
+									"",
+									""
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "https://awspolicy-api-d.in.ft.com/v2/",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							},
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"description": ""
+							},
+							{
+								"key": "x-api-key",
+								"value": "{{x-api-key}}",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"systemCode\": \"todelete-runscope-basic-test\",\n    \"templateName\": \"basic\"\n\n}"
+						},
+						"description": "creates aws policy without any permission. "
+					},
+					"response": []
+				},
+				{
+					"name": "Update aws policy with S3 permission",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"",
+									"",
+									"tests[\"Body matches string\"] = responseBody.has(\"SUCCESS\");",
+									"",
+									"tests[\"aws policy has no permission\"] = !responseBody.has(\"Role\");",
+									"",
+									"tests[\"Artefact bucket not created\"] = !responseBody.has(\"artefacts.todelete\");",
+									"",
+									"tests[\"Status code is 200\"] = responseCode.code === 200;",
+									"",
+									"tests[\"Verify that policy was Updated\"] = responseBody.has(\"Updated\");",
+									"",
+									"",
+									"",
+									"",
+									"",
+									"",
+									"",
+									"",
+									"",
+									"",
+									"",
+									"",
+									""
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "https://awspolicy-api-d.in.ft.com/v2/",
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							},
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"description": ""
+							},
+							{
+								"key": "x-api-key",
+								"value": "{{x-api-key}}",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"systemCode\": \"todelete-runscope-basic-test\",\n    \"accessKey\": \"{{accessKey}}\",\n    \"permissions\": [\"s3\"]\n    \n\n}"
+						},
+						"description": "creates aws policy with s3 permission and set create artefact to true. This creates the aretefactBucket"
+					},
+					"response": []
+				},
+				{
+					"name": "Create a policy already existed",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"tests[\"Status code is 500\"] = responseCode.code === 500;",
+									"",
+									"",
+									"tests[\"Unable to create - the user already exists\"] = responseBody.has(\"Unable to create - the user already exists\");",
+									"",
+									"",
+									""
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "https://awspolicy-api-d.in.ft.com/v2/",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							},
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"description": ""
+							},
+							{
+								"key": "x-api-key",
+								"value": "{{x-api-key}}",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"systemCode\": \"todelete-runscope-basic-test\",\n    \"templateName\": \"basic\"\n\n}"
+						},
+						"description": "The policy creation should fail because it exist already"
+					},
+					"response": []
+				},
+				{
+					"name": "Delete aws policybasic template",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"tests[\"Status code is 200\"] = (responseCode.code === 200);",
+									"",
+									"tests[\"Body matches string\"] = responseBody.has(\"SUCCESS\");",
+									"",
+									"tests[\"Artefact bucket deleted\"] = responseBody.has(\"Deleted\")",
+									"",
+									"tests[\"Role is detached from Policy\"] = responseBody.has(\"Detach Role from Policy\");",
+									"",
+									"tests[\"Deleted All Secrets\"] = responseBody.has(\"All Secrets\");",
+									"",
+									"tests[\"User deleted\"] = responseBody.has(\"User\");",
+									"",
+									"tests[\"Role not found\"] = responseBody.has(\"Role not found\");",
+									"",
+									"",
+									"",
+									"",
+									"",
+									"",
+									"",
+									"",
+									""
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "https://awspolicy-api-d.in.ft.com/v2/",
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							},
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"description": ""
+							},
+							{
+								"key": "x-api-key",
+								"value": "{{x-api-key}}",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"systemCode\": \"todelete-runscope-basic-test\",\n    \"accessKey\": \"{{accessKey}}\"\n \n    \n\n}"
+						},
+						"description": "Deletes the aws policy created"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Serverless",
+			"description": "This is a collection of serverless tests",
+			"item": [
+				{
+					"name": "Create aws policy with with serverless template",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"tests[\"Status code is 200\"] = (responseCode.code === 200);",
+									"",
+									"tests[\"Body matches string\"] = responseBody.has(\"SUCCESS\");",
+									"",
+									"tests[\"Artefact bucket created\"] = responseBody.has(\"artefacts.todelete\")",
+									"",
+									"tests[\"Status message has string\"] = responseBody.has(\"Created\");",
+									"",
+									"tests[\"Role is created\"] = responseBody.has(\"Role\");",
+									"",
+									"tests[\"Policy is created\"] = responseBody.has(\"Policy\");",
+									"",
+									"tests[\"S3 Bucket creeated\"] = responseBody.has(\"S3\");",
+									"",
+									"tests[\"User created for the policy\"] = responseBody.has(\"User\");",
+									"",
+									"tests[\"User attached to policy\"] = responseBody.has(\"Attach User to Policy\");",
+									"",
+									"tests[\"Role attached to policy\"] = responseBody.has(\"Attach Role to Policy\");",
+									"",
+									"if (responseCode.code === 200){",
+									"    try {",
+									"        var data = JSON.parse(responseBody);",
+									"        var results = data.filter(function(obj) {",
+									"\t       return obj.resourceDetails['awsAccessKeyId']",
+									"        });",
+									"    var accessKey = results[0].resourceDetails.awsAccessKeyId",
+									"    }",
+									"    catch(e){",
+									"        console.log(e)",
+									"    }",
+									"    ",
+									"    postman.setGlobalVariable(\"accessKey\", accessKey);",
+									"}",
+									"",
+									"",
+									""
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "https://awspolicy-api-d.in.ft.com/v2/",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							},
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"description": ""
+							},
+							{
+								"key": "x-api-key",
+								"value": "{{x-api-key}}",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"systemCode\": \"todelete-runscope-test\",\n    \"templateName\": \"serverless\"\n\n}"
+						},
+						"description": "creates aws policy with lambda, s3, apigateway and cloudformation. Also, a artefact bucket is created"
+					},
+					"response": []
+				},
+				{
+					"name": "Update test with access key ",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"tests[\"Status code is 200\"] = responseCode.code === 200;",
+									"",
+									"tests[\"Body matches string\"] = responseBody.has(\"SUCCESS\");",
+									"",
+									"",
+									"tests[\"Policy updated\"] = responseBody.has(\"Updated\")",
+									"",
+									"tests[\"Resource Policy available\"] = responseBody.has(\"Policy\");",
+									"",
+									"",
+									"",
+									"",
+									"",
+									""
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "https://awspolicy-api-d.in.ft.com/v2/",
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							},
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"description": ""
+							},
+							{
+								"key": "x-api-key",
+								"value": "{{x-api-key}}",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"systemCode\": \"todelete-runscope-test\",\n    \"accessKey\" : \"{{accessKey}}\",\n    \"permissions\": [\"vpc\", \"ses\",\"kinesis\",\"dynamodb\"]\n    \n\n}"
+						},
+						"description": "This update test case should update the permissions successfully"
+					},
+					"response": []
+				},
+				{
+					"name": "Update without accesskey ",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"tests[\"Status code is 500\"] = responseCode.code === 500;",
+									"",
+									"",
+									"tests[\"Resource Policy available\"] = responseBody.has(\"Access Key must be specified\");",
+									"",
+									"",
+									"",
+									"",
+									"",
+									""
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "https://awspolicy-api-d.in.ft.com/v2/",
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							},
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"description": ""
+							},
+							{
+								"key": "x-api-key",
+								"value": "{{x-api-key}}",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"systemCode\": \"todelete-runscope-test\",\n    \"permissions\": [\"vpc\", \"ses\",\"kinesis\",\"dynamodb\"]\n    \n\n}"
+						},
+						"description": "This update test should fail without the access key specified"
+					},
+					"response": []
+				},
+				{
+					"name": "Delete without accesskey  ",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"tests[\"Status code is 500\"] = responseCode.code === 500;",
+									"",
+									"",
+									"tests[\"Access key error\"] = responseBody.has(\"Access Key must be specified\");",
+									"",
+									"",
+									"",
+									"",
+									"",
+									""
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "https://awspolicy-api-d.in.ft.com/v2/",
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							},
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"description": ""
+							},
+							{
+								"key": "x-api-key",
+								"value": "{{x-api-key}}",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"systemCode\": \"todelete-runscope-test\"\n\n}"
+						},
+						"description": "This delete test should fail to delete the aws policy without the access key specified"
+					},
+					"response": []
+				},
+				{
+					"name": "Delete with accesskey  ",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"tests[\"Status code is 200\"] = (responseCode.code === 200);",
+									"",
+									"tests[\"Body matches string\"] = responseBody.has(\"SUCCESS\");",
+									"",
+									"tests[\"Artefact bucket deleted\"] = responseBody.has(\"Deleted\")",
+									"",
+									"tests[\"Role is detached from Policy\"] = responseBody.has(\"Detach Role from Policy\");",
+									"",
+									"tests[\"Deleted All Secrets\"] = responseBody.has(\"All Secrets\");",
+									"",
+									"tests[\"User deleted\"] = responseBody.has(\"User\");",
+									"",
+									"tests[\"Role deleted\"] = responseBody.has(\"Deleted Role\");",
+									"",
+									""
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "https://awspolicy-api-d.in.ft.com/v2/",
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							},
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"description": ""
+							},
+							{
+								"key": "x-api-key",
+								"value": "{{x-api-key}}",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"systemCode\": \"todelete-runscope-test\",\n    \"accessKey\":\"{{accessKey}}\"\n    \n\n}"
+						},
+						"description": "This delete test should delete the aws policy as the access key is specified"
+					},
+					"response": []
+				},
+				{
+					"name": "Create aws policy to test delete options",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"tests[\"Status code is 200\"] = (responseCode.code === 200);",
+									"",
+									"if (responseCode.code === 200){",
+									"    try {",
+									"        var data = JSON.parse(responseBody);",
+									"        var results = data.filter(function(obj) {",
+									"\t       return obj.resourceDetails['awsAccessKeyId']",
+									"        });",
+									"    var accessKey = results[0].resourceDetails.awsAccessKeyId",
+									"    }",
+									"    catch(e){",
+									"        console.log(e)",
+									"    }",
+									"    ",
+									"    postman.setGlobalVariable(\"accessKey\", accessKey);",
+									"}",
+									"",
+									"",
+									""
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "https://awspolicy-api-d.in.ft.com/v2/",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							},
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"description": ""
+							},
+							{
+								"key": "x-api-key",
+								"value": "{{x-api-key}}",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"systemCode\": \"todelete-runscope-test\",\n    \"templateName\": \"serverless\"\n\n}"
+						},
+						"description": "creates aws policy with lambda, s3, apigateway and cloudformation. Also, a artefact bucket is created"
+					},
+					"response": []
+				},
+				{
+					"name": "Delete without artefact bucket",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"tests[\"Status code is 200\"] = (responseCode.code === 200);",
+									"",
+									"tests[\"Body matches string\"] = responseBody.has(\"SUCCESS\");",
+									"",
+									"tests[\"Artefact bucket deleted\"] = responseBody.has(\"Deleted\")",
+									"",
+									"tests[\"Role is detached from Policy\"] = responseBody.has(\"Detach Role from Policy\");",
+									"",
+									"tests[\"Deleted All Secrets\"] = responseBody.has(\"All Secrets\");",
+									"",
+									"tests[\"S3 Bucket creeated\"] = responseBody.has(\"S3\");",
+									"",
+									"tests[\"Role deleted\"] = responseBody.has(\"Deleted Role\");",
+									"",
+									""
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "https://awspolicy-api-d.in.ft.com/v2/",
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							},
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"description": ""
+							},
+							{
+								"key": "x-api-key",
+								"value": "{{x-api-key}}",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"systemCode\": \"todelete-runscope-test\",\n    \"accessKey\":\"{{accessKey}}\",\n    \"deleteArtefactBucket\":false\n    \n\n}"
+						},
+						"description": "This delete test should delete the all associated resource to this aws policy without deleting the artefact bucket"
+					},
+					"response": []
+				},
+				{
+					"name": "Create final aws policy for clean up",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"tests[\"Status code is 200\"] = (responseCode.code === 200);",
+									"",
+									"if (responseCode.code === 200){",
+									"    try {",
+									"        var data = JSON.parse(responseBody);",
+									"        var results = data.filter(function(obj) {",
+									"\t       return obj.resourceDetails['awsAccessKeyId']",
+									"        });",
+									"    var accessKey = results[0].resourceDetails.awsAccessKeyId",
+									"    }",
+									"    catch(e){",
+									"        console.log(e)",
+									"    }",
+									"    ",
+									"    postman.setGlobalVariable(\"accessKey\", accessKey);",
+									"}",
+									"",
+									"",
+									"tests[\"Artefact creation Fails\"] = responseBody.has(\"FAIL\")",
+									"tests[\"artefact bucket still exists\"] = responseBody.has(\"artefacts.todelete\")"
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "https://awspolicy-api-d.in.ft.com/v2/",
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							},
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"description": ""
+							},
+							{
+								"key": "x-api-key",
+								"value": "{{x-api-key}}",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"systemCode\": \"todelete-runscope-test\",\n    \"templateName\": \"serverless\"\n\n}"
+						},
+						"description": "creates aws policy with lambda, s3, apigateway and cloudformation. Artefact bucket creation step should fail as this was not deleted in the previous step"
+					},
+					"response": []
+				},
+				{
+					"name": "Delete request to clean up",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"tests[\"Status code is 200\"] = (responseCode.code === 200);",
+									"",
+									"tests[\"Body matches string\"] = responseBody.has(\"SUCCESS\");",
+									"",
+									"tests[\"Artefact bucket deleted\"] = responseBody.has(\"Deleted\")",
+									"",
+									"tests[\"Role is detached from Policy\"] = responseBody.has(\"Detach Role from Policy\");",
+									"",
+									"tests[\"Deleted All Secrets\"] = responseBody.has(\"All Secrets\");",
+									"",
+									"tests[\"S3 Bucket creeated\"] = responseBody.has(\"S3\");",
+									"",
+									"tests[\"Role deleted\"] = responseBody.has(\"Deleted Role\");",
+									"",
+									""
+								]
+							}
+						}
+					],
+					"request": {
+						"url": "https://awspolicy-api-d.in.ft.com/v2/",
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"description": ""
+							},
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"description": ""
+							},
+							{
+								"key": "x-api-key",
+								"value": "{{x-api-key}}",
+								"description": ""
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"systemCode\": \"todelete-runscope-test\",\n    \"accessKey\":\"{{accessKey}}\"\n    \n\n}"
+						},
+						"description": "This delete test should delete the policy and all the associated resources e.g permissions and artefact"
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}
